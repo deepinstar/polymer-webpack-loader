@@ -140,7 +140,7 @@ class ProcessHtml {
 
     let source = this.links(linksArray);
     if (toBodyArray.length > 0 || domModuleArray.length > 0) {
-      source += '\nconst RegisterHtmlTemplate = require(\'polymer-webpack-loader/register-html-template\');\n';
+      source += '\nconst RegisterHtmlTemplate = (await import(\'polymer-webpack-loader/register-html-template\')).default;\n';
     }
 
     // After styles are processed, replace the special comments with the rewritten
@@ -167,7 +167,7 @@ class ProcessHtml {
           return match;
         }
         const rewrittenUrl = this.stylePlaceholders.get(g1);
-        return `<style>" + require(${JSON.stringify(rewrittenUrl)}) + "</style>`;
+        return `<style>" + import(${JSON.stringify(rewrittenUrl)}) + "</style>`;
       };
 
       // Style URLS were replaced with placeholders
@@ -188,7 +188,7 @@ class ProcessHtml {
           urlSuffix = rewrittenUrl.substr(queryIndex);
           rewrittenUrl = rewrittenUrl.substr(0, queryIndex);
         }
-        return `'" + require(${JSON.stringify(rewrittenUrl)}) + "${urlSuffix}'`;
+        return `'" + import(${JSON.stringify(rewrittenUrl)}) + "${urlSuffix}'`;
       };
 
       const htmlLoaderOptions = Object.assign({}, htmlLoaderDefaultOptions, this.options.htmlLoader || {});
@@ -268,7 +268,7 @@ class ProcessHtml {
         path = href;
       }
 
-      source += `\nrequire('${path}');\n`;
+      source += `\nimport '${path}';\n`;
     });
     return source;
   }
@@ -289,7 +289,7 @@ class ProcessHtml {
       const src = getAttribute(scriptNode, 'src') || '';
       if (src) {
         const path = ProcessHtml.adjustPathIfNeeded(src);
-        source += `\nrequire('${path}');\n`;
+        source += `\nimport('${path}');\n`;
         lineCount += 2;
       } else {
         const scriptContents = parse5.serialize(scriptNode);
